@@ -1,6 +1,7 @@
 package com.example.jobApplication.company;
 
 import com.example.jobApplication.job.Job;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -12,14 +13,14 @@ public class Company {
     private Long id;
     private String name;
     private String description;
-    private  String review;
+    private String review;
 
-    @OneToMany
-    private List<Job>jobs;
+    @JsonIgnore
+    @OneToMany(mappedBy = "company")
+    private List<Job> jobs;
 
-//    @OneToMany
-//    private List<Review>reviews;
-
+    // @OneToMany
+    // private List<Review>reviews;
 
     public Company() {
     }
