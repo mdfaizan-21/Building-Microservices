@@ -40,7 +40,7 @@ public class CompanyController {
     }
 
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     public  ResponseEntity<String> deleteCompany(@PathVariable Long id){
         if(companyService.remove(id)){
             return ResponseEntity.ok("Company Removed Successfully");
