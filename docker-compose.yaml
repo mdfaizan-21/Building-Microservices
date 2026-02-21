@@ -5,6 +5,7 @@ services:
     environment:
       POSTGRES_USER: faizan
       POSTGRES_PASSWORD: faizan@1234
+      POSTGRES_DB: jobApp
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
@@ -19,6 +20,7 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: pgadmin4@gmail.com
       PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     volumes:
       - pgadmin:/var/lib/pgadmin
     ports:
@@ -32,5 +34,3 @@ networks:
 volumes:
   postgres:
   pgadmin:
-
-
