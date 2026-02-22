@@ -3,11 +3,14 @@ package com.example.companyms;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.util.TimeZone;
+
 @SpringBootApplication
 public class CompanymsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CompanymsApplication.class, args);
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        SpringApplication.run(CompanymsApplication.class, args);
 	}
 
 }
