@@ -1,5 +1,6 @@
 package com.example.jobms.job;
 
+import com.example.jobms.dto.JobWithCompanyDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ public class JobController {
     private JobService jobService;
 
     @GetMapping
-    public ResponseEntity<List<Job>> getAllJobs() {
+    public ResponseEntity<List<JobWithCompanyDTO>> getAllJobs() {
         return ResponseEntity.ok(jobService.findAll());
     }
 
