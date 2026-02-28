@@ -25,8 +25,8 @@ public class JobController {
         return ResponseEntity.status(201).body(currentJob);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<Job>getJob(@PathVariable Long id){
-        Job job=jobService.findById(id);
+    public ResponseEntity<JobWithCompanyDTO>getJob(@PathVariable Long id){
+        JobWithCompanyDTO job=jobService.findById(id);
         return job!=null?ResponseEntity.ok(job):ResponseEntity.status(404).body(job);
     }
     @DeleteMapping("/{id}")
@@ -42,7 +42,7 @@ public class JobController {
     @PutMapping("/{id}")
     public ResponseEntity<Job>updateJob(@PathVariable Long id,@RequestBody Job UpdatedJob){
         Job job=jobService.updateById(id,UpdatedJob);
-        return job!=null?ResponseEntity.ok(job):ResponseEntity.status(404).body(job);
+        return job!=null?ResponseEntity.ok(job):ResponseEntity.status(404).body(null);
     }
 
 }

@@ -5,33 +5,33 @@ import com.example.jobms.external.Company;
 import com.example.jobms.job.Job;
 import com.example.jobms.job.JobRepository;
 import com.example.jobms.job.JobService;
+import com.example.jobms.job.mapper.JobWithCompanyMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class JobServiceImpl implements JobService {
     @Autowired
     JobRepository jobRepository;
+
+    @Autowired
+    RestTemplate restTemplate;
     @Override
     public List<JobWithCompanyDTO> findAll() {
 
         List<Job>jobs=jobRepository.findAll();
         List<JobWithCompanyDTO>jobWithCompanyDTOs=new ArrayList<>();
 
-        RestTemplate restTemplate=new RestTemplate();
+//        RestTemplate restTemplate=new RestTemplate();
 
         for (Job job:jobs){
-            Company company=restTemplate.getForObject("http://localhost:8082/company/"+job.getCompanyId(),
+            Company company=restTemplate.getForObject("http://COMPANYMS:8082/company/"+job.getCompanyId(),
                     Company.class);
-            JobWithCompanyDTO jobWithCompanyDTO=new JobWithCompanyDTO();
-            jobWithCompanyDTO.setCompany(company);
-            jobWithCompanyDTO.setJob(job);
-
+            JobWithCompanyDTO jobWithCompanyDTO=JobWithCompanyMapper.mapJobWithCompany(job,company);
             jobWithCompanyDTOs.add(jobWithCompanyDTO);
         }
 
@@ -52,14 +52,21 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public Job findById(Long id) {
-        Optional<Job> job=jobRepository.findById(id);
-        return job.orElse(null);
+    public JobWithCompanyDTO findById(Long id) {
+        Job job=jobRepository.findById(id).orElse(null);
+        if (job!=null) {
+            Company company =restTemplate.getForObject("http://COMPANYMS:8082/company/"+job.getCompanyId(),
+                    Company.class);
+
+            return JobWithCompanyMapper.mapJobWithCompany(job,company);
+        }
+
+        return null;
     }
 
     @Override
     public Job updateById(Long id, Job updatedJob) {
-        Job currentJob=findById(id);
+        Job currentJob=jobRepository.findById(id).orElse(null);
         if(currentJob!=null){
             currentJob.setDescription(updatedJob.getDescription());
             currentJob.setLocation(updatedJob.getLocation());
