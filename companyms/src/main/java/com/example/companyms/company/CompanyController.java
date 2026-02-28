@@ -1,5 +1,6 @@
 package com.example.companyms.company;
 
+import com.example.companyms.dto.CompanyWithReviewAndJobsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +13,13 @@ public class CompanyController {
 
     @Autowired
      CompanyService companyService;
+    @GetMapping("/full")
+    public ResponseEntity<List<CompanyWithReviewAndJobsDTO>> getAllCompany2(){
+        return ResponseEntity.ok(companyService.getAllCompanies());
+    }
     @GetMapping
     public ResponseEntity<List<Company>> getAllCompany(){
-        return ResponseEntity.ok(companyService.getAllCompanies());
+        return ResponseEntity.ok(companyService.getAllCompany());
     }
     @GetMapping("/{id}")
     public  ResponseEntity<Company> getCompany(@PathVariable Long id){
