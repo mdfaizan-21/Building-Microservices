@@ -18,7 +18,10 @@ public class JobController {
     public ResponseEntity<List<JobWithCompanyDTO>> getAllJobs() {
         return ResponseEntity.ok(jobService.findAll());
     }
-
+    @GetMapping("/partial")
+    public ResponseEntity<List<Job>> getAll() {
+        return ResponseEntity.ok(jobService.find());
+    }
     @PostMapping
     public ResponseEntity<Job> addNewJob(@RequestBody Job currentJob) {
         jobService.createJob(currentJob);

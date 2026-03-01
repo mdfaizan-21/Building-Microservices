@@ -2,11 +2,14 @@ package com.example.jobms.job.impl;
 
 import com.example.jobms.dto.JobWithCompanyDTO;
 import com.example.jobms.external.Company;
+import com.example.jobms.external.Review;
 import com.example.jobms.job.Job;
 import com.example.jobms.job.JobRepository;
 import com.example.jobms.job.JobService;
 import com.example.jobms.job.mapper.JobWithCompanyMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,11 +34,21 @@ public class JobServiceImpl implements JobService {
         for (Job job:jobs){
             Company company=restTemplate.getForObject("http://COMPANYMS:8082/company/"+job.getCompanyId(),
                     Company.class);
-            JobWithCompanyDTO jobWithCompanyDTO=JobWithCompanyMapper.mapJobWithCompany(job,company);
+            List<Review>reviews=restTemplate.exchange("http://REVIEWMS:8083/review?companyId" + job.getCompanyId(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Review>>() {
+                    }).getBody();
+            JobWithCompanyDTO jobWithCompanyDTO=JobWithCompanyMapper.mapJobWithCompany(job,company,reviews);
             jobWithCompanyDTOs.add(jobWithCompanyDTO);
         }
 
         return jobWithCompanyDTOs;
+    }
+
+    @Override
+    public List<Job> find() {
+        return jobRepository.findAll();
     }
 
     @Override
@@ -57,8 +70,13 @@ public class JobServiceImpl implements JobService {
         if (job!=null) {
             Company company =restTemplate.getForObject("http://COMPANYMS:8082/company/"+job.getCompanyId(),
                     Company.class);
+            List<Review>reviews=restTemplate.exchange("http://REVIEWMS:8083/review?companyId" + job.getCompanyId(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Review>>() {
+                    }).getBody();
 
-            return JobWithCompanyMapper.mapJobWithCompany(job,company);
+            return JobWithCompanyMapper.mapJobWithCompany(job,company,reviews);
         }
 
         return null;
