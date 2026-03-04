@@ -16,11 +16,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 public class JobServiceImpl implements JobService {
+    private static final Logger logger = LoggerFactory.getLogger(JobServiceImpl.class);
 
     @Autowired
     public JobServiceImpl(JobRepository jobRepository, CompanyClient companyClient, ReviewClient reviewClient) {
@@ -37,21 +41,30 @@ public class JobServiceImpl implements JobService {
     RestTemplate restTemplate;
 
     @Override
-    @CircuitBreaker(name="companyBreaker")
+    @CircuitBreaker(name = "companyBreaker", fallbackMethod = "companyFallBack")
     public List<JobWithCompanyDTO> findAll() {
 
-        List<Job>jobs=jobRepository.findAll();
-        List<JobWithCompanyDTO>jobWithCompanyDTOs=new ArrayList<>();
+        List<Job> jobs = jobRepository.findAll();
+        List<JobWithCompanyDTO> jobWithCompanyDTOs = new ArrayList<>();
 
-//        RestTemplate restTemplate=new RestTemplate();
+        // RestTemplate restTemplate=new RestTemplate();
 
-        for (Job job:jobs){
-            Company company=companyClient.getCompany(job.getCompanyId());
-            List<Review>reviews=reviewClient.getReviews(job.getCompanyId());
-            JobWithCompanyDTO jobWithCompanyDTO=JobWithCompanyMapper.mapJobWithCompany(job,company,reviews);
+        for (Job job : jobs) {
+            Company company = companyClient.getCompany(job.getCompanyId());
+            List<Review> reviews = reviewClient.getReviews(job.getCompanyId());
+            JobWithCompanyDTO jobWithCompanyDTO = JobWithCompanyMapper.mapJobWithCompany(job, company, reviews);
             jobWithCompanyDTOs.add(jobWithCompanyDTO);
         }
         return jobWithCompanyDTOs;
+    }
+
+    public List<JobWithCompanyDTO> companyFallBack(Exception e) {
+        logger.error("Fallback triggered for 'findAll' in JobServiceImpl. Error: {}", e.getMessage());
+
+        List<Job> jobs = jobRepository.findAll();
+        return jobs.stream()
+                .map(job -> JobWithCompanyMapper.mapJobWithCompany(job, null, Collections.emptyList()))
+                .toList();
     }
 
     @Override
@@ -66,7 +79,7 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public boolean remove(Long id) {
-        if(findById(id)==null)
+        if (findById(id) == null)
             return false;
         jobRepository.deleteById(id);
         return true;
@@ -74,17 +87,17 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public JobWithCompanyDTO findById(Long id) {
-        Job job=jobRepository.findById(id).orElse(null);
-        if (job!=null) {
-            Company company =restTemplate.getForObject("http://COMPANYMS:8082/company/"+job.getCompanyId(),
+        Job job = jobRepository.findById(id).orElse(null);
+        if (job != null) {
+            Company company = restTemplate.getForObject("http://COMPANYMS:8082/company/" + job.getCompanyId(),
                     Company.class);
-            List<Review>reviews=restTemplate.exchange("http://REVIEWMS:8083/review?companyId" + job.getCompanyId(),
+            List<Review> reviews = restTemplate.exchange("http://REVIEWMS:8083/review?companyId" + job.getCompanyId(),
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<List<Review>>() {
                     }).getBody();
 
-            return JobWithCompanyMapper.mapJobWithCompany(job,company,reviews);
+            return JobWithCompanyMapper.mapJobWithCompany(job, company, reviews);
         }
 
         return null;
@@ -92,8 +105,8 @@ public class JobServiceImpl implements JobService {
 
     @Override
     public Job updateById(Long id, Job updatedJob) {
-        Job currentJob=jobRepository.findById(id).orElse(null);
-        if(currentJob!=null){
+        Job currentJob = jobRepository.findById(id).orElse(null);
+        if (currentJob != null) {
             currentJob.setDescription(updatedJob.getDescription());
             currentJob.setLocation(updatedJob.getLocation());
             currentJob.setTitle(updatedJob.getTitle());
