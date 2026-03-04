@@ -7,6 +7,7 @@ import com.example.companyms.company.mapper.CompanyCreator;
 import com.example.companyms.dto.CompanyWithReviewAndJobsDTO;
 import com.example.companyms.external.Job;
 import com.example.companyms.external.Review;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -27,6 +28,7 @@ public class CompanyServiceImpl implements CompanyService {
     RestTemplate restTemplate;
 
     @Override
+    @RateLimiter(name = "company")
     public List<CompanyWithReviewAndJobsDTO> getAllCompanies() {
 
         List<Company> companies = companyRepository.findAll();
