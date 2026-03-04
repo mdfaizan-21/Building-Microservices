@@ -2,10 +2,13 @@ package com.example.jobms.job.mapper;
 
 import com.example.jobms.dto.JobWithCompanyDTO;
 import com.example.jobms.external.Company;
+import com.example.jobms.external.Review;
 import com.example.jobms.job.Job;
 
+import java.util.List;
+
 public class JobWithCompanyMapper {
-    public static JobWithCompanyDTO mapJobWithCompany(Job job, Company company){
+    public static JobWithCompanyDTO mapJobWithCompany(Job job, Company company, List<Review> reviews){
         JobWithCompanyDTO jobWithCompanyDTO=new JobWithCompanyDTO();
 
         jobWithCompanyDTO.setCompany(company);
@@ -15,6 +18,7 @@ public class JobWithCompanyMapper {
         jobWithCompanyDTO.setLocation(job.getLocation());
         jobWithCompanyDTO.setMaxSalary(job.getMaxSalary());
         jobWithCompanyDTO.setMinSalary(job.getMinSalary());
+        jobWithCompanyDTO.setReviews(reviews);
 
         return jobWithCompanyDTO;
     }

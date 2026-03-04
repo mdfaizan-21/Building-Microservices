@@ -1,13 +1,18 @@
 package com.example.jobms.job.impl;
 
+import com.example.jobms.client.CompanyClient;
+import com.example.jobms.client.ReviewClient;
 import com.example.jobms.dto.JobWithCompanyDTO;
 import com.example.jobms.external.Company;
+import com.example.jobms.external.Review;
 import com.example.jobms.job.Job;
 import com.example.jobms.job.JobRepository;
 import com.example.jobms.job.JobService;
 import com.example.jobms.job.mapper.JobWithCompanyMapper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,8 +21,17 @@ import java.util.List;
 
 @Service
 public class JobServiceImpl implements JobService {
+
     @Autowired
+    public JobServiceImpl(JobRepository jobRepository, CompanyClient companyClient, ReviewClient reviewClient) {
+        this.jobRepository = jobRepository;
+        this.companyClient = companyClient;
+        this.reviewClient = reviewClient;
+    }
+
     JobRepository jobRepository;
+    private CompanyClient companyClient;
+    private ReviewClient reviewClient;
 
     @Autowired
     RestTemplate restTemplate;
@@ -32,13 +46,17 @@ public class JobServiceImpl implements JobService {
 //        RestTemplate restTemplate=new RestTemplate();
 
         for (Job job:jobs){
-            Company company=restTemplate.getForObject("http://COMPANYMS:8082/company/"+job.getCompanyId(),
-                    Company.class);
-            JobWithCompanyDTO jobWithCompanyDTO=JobWithCompanyMapper.mapJobWithCompany(job,company);
+            Company company=companyClient.getCompany(job.getCompanyId());
+            List<Review>reviews=reviewClient.getReviews(job.getCompanyId());
+            JobWithCompanyDTO jobWithCompanyDTO=JobWithCompanyMapper.mapJobWithCompany(job,company,reviews);
             jobWithCompanyDTOs.add(jobWithCompanyDTO);
         }
-
         return jobWithCompanyDTOs;
+    }
+
+    @Override
+    public List<Job> find() {
+        return jobRepository.findAll();
     }
 
     @Override
@@ -60,8 +78,13 @@ public class JobServiceImpl implements JobService {
         if (job!=null) {
             Company company =restTemplate.getForObject("http://COMPANYMS:8082/company/"+job.getCompanyId(),
                     Company.class);
+            List<Review>reviews=restTemplate.exchange("http://REVIEWMS:8083/review?companyId" + job.getCompanyId(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Review>>() {
+                    }).getBody();
 
-            return JobWithCompanyMapper.mapJobWithCompany(job,company);
+            return JobWithCompanyMapper.mapJobWithCompany(job,company,reviews);
         }
 
         return null;
