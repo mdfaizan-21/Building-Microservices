@@ -6,6 +6,7 @@ import com.example.jobms.job.Job;
 import com.example.jobms.job.JobRepository;
 import com.example.jobms.job.JobService;
 import com.example.jobms.job.mapper.JobWithCompanyMapper;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -20,7 +21,9 @@ public class JobServiceImpl implements JobService {
 
     @Autowired
     RestTemplate restTemplate;
+
     @Override
+    @CircuitBreaker(name="companyBreaker")
     public List<JobWithCompanyDTO> findAll() {
 
         List<Job>jobs=jobRepository.findAll();
