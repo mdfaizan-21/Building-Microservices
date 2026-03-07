@@ -5,6 +5,7 @@ import com.example.companyms.company.CompanyRepository;
 import com.example.companyms.company.CompanyService;
 import com.example.companyms.company.mapper.CompanyCreator;
 import com.example.companyms.dto.CompanyWithReviewAndJobsDTO;
+import com.example.companyms.dto.ReviewMessage;
 import com.example.companyms.external.Job;
 import com.example.companyms.external.Review;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -97,5 +98,11 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public Company getCompanyById(Long id) {
         return companyRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public void updateCompanyRating(ReviewMessage reviewMessage) {
+        System.out.println("review message received successfully");
+
     }
 }
