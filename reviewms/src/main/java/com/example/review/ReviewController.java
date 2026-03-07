@@ -1,5 +1,6 @@
 package com.example.review;
 
+import com.example.review.messaging.ReviewMessageProducer;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +12,11 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final ReviewMessageProducer messageProducer;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, ReviewMessageProducer messageProducer) {
         this.reviewService = reviewService;
+        this.messageProducer = messageProducer;
     }
 
     @GetMapping
@@ -26,6 +29,7 @@ public class ReviewController {
         boolean isReviewAdded=reviewService.add(companyId,review);
 
         if (isReviewAdded){
+            messageProducer.sendMessage(review);
             return new ResponseEntity<>("Review Added Successfully", HttpStatusCode.valueOf(200));
         }
 
