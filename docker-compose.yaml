@@ -1,3 +1,4 @@
+version: '3.7'
 services:
   postgres:
     container_name: postgres_container
@@ -35,6 +36,76 @@ services:
       - 9411:9411
     networks:
       - postgres
+  config-server-ms:
+    image: faizan1921/config-server-ms:latest
+    container_name: config-server-ms
+    ports:
+      - 8080:8080
+    depends_on:
+      - servicereg
+    networks:
+      - microservice-network
+      - postgres
+    environment:
+      - SPRING_PROFILE_ACTIVE=docker
+  servicereg:
+    image: faizan1921/servicereg:latest
+    container_name: servicereg
+    ports:
+      - 8761:8761
+    depends_on:
+      - rabbitmq
+      - postgres
+      - pgadmin
+      - zipkin
+    networks:
+      - microservice-network
+      - postgres
+    environment:
+      - SPRING_PROFILE_ACTIVE=docker
+  companyms:
+    image: faizan1921/companyms:latest
+    container_name: company
+    ports:
+      - 8082:8082
+    depends_on:
+      - servicereg
+      - config-server-ms
+    networks:
+      - microservice-network
+      - postgres
+    environment:
+      - SPRING_PROFILE_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://servicereg:8761/eureka
+  jobms:
+    image: faizan1921/jobms:latest
+    container_name: job
+    ports:
+      - 8081:8081
+    depends_on:
+      - servicereg
+      - config-server-ms
+    networks:
+      - microservice-network
+      - postgres
+    environment:
+      - SPRING_PROFILE_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://servicereg:8761/eureka
+  reviewms:
+    image: faizan1921/reviewms:latest
+    container_name: review
+    ports:
+      - 8083:8083
+    depends_on:
+      - servicereg
+      - config-server-ms
+    networks:
+      - microservice-network
+      - postgres
+    environment:
+      - SPRING_PROFILE_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://servicereg:8761/eureka
+
   rabbitmq:
     image: rabbitmq:4-management
     container_name: rabbitmq
